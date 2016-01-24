@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<accessibility-service
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        android:description="@string/app_about_qq"
+        android:accessibilityEventTypes="typeWindowStateChanged|typeNotificationStateChanged|typeViewFocused"
+        android:accessibilityFeedbackType="feedbackGeneric"
+        android:packageNames="com.tencent.mobileqq"
+        android:notificationTimeout="100"
+        android:accessibilityFlags=""
+        android:canRetrieveWindowContent="true"/>

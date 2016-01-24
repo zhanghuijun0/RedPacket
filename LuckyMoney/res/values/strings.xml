@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="app_name">红包利器</string>
+    <string name="app_about">这是一个微信抢红包的程序，本程序不会读取你的私人信息！</string>
+    <string name="app_about_qq">这是一个QQ抢红包的程序，本程序不会读取你的私人信息！</string>
+
+</resources>
