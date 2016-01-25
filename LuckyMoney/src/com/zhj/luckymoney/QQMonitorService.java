@@ -6,6 +6,7 @@ import android.accessibilityservice.AccessibilityService;
 import android.annotation.SuppressLint;
 import android.app.Notification;
 import android.app.PendingIntent;
+import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.accessibility.AccessibilityEvent;
@@ -74,9 +75,14 @@ public class QQMonitorService extends AccessibilityService {
 			}
 			if (mIfReply) {
 				AccessibilityNodeInfo nodeInfo = getRootInActiveWindow();
-				setReplyText(nodeInfo, mName + ",谢谢你的红包，虽然只有" + mMoney + "元");
+				setReplyText(nodeInfo, mName + ",谢谢," + mMoney + "元");
 				setSendClick(getRootInActiveWindow());
 				mIfReply = false;
+				Intent intent = new Intent();
+				intent.setAction(Intent.ACTION_MAIN);
+				intent.addCategory(Intent.CATEGORY_HOME);  
+				intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+				startActivity(intent);
 			}
 		} else if (className.equals("cooperation.qwallet.plugin.QWalletPluginProxyActivity")) {
 			// 打开红包界面
