@@ -7,14 +7,13 @@ import android.annotation.TargetApi;
 import android.app.Notification;
 import android.app.PendingIntent;
 import android.os.Build;
-import android.os.Handler;
 import android.util.Log;
 import android.view.accessibility.AccessibilityEvent;
-import android.view.accessibility.AccessibilityManager;
 import android.view.accessibility.AccessibilityNodeInfo;
 import android.widget.Toast;
 
 /**
+ * 微信服务监控
  * 
  * @author Administrator
  *
@@ -22,23 +21,19 @@ import android.widget.Toast;
 public class MonitorService extends AccessibilityService {
 	static final String TAG = "MonitorService";
 	static final String WECHAT_PACKAGENAME = "com.tencent.mm";// 微信的包名
-	// static final String QQ_PACKAGENAME = "com.tencent.mobileqq";// QQ的包名
 	static final String WeiXin_TEXT_KEY = "[微信红包]";// 红包消息的关键字
-	// static final String QQ_TEXT_KEY = "[QQ红包]";
 	private String mLuckyMoneyReceive = "com.tencent.mm.plugin.luckymoney.ui.LuckyMoneyReceiveUI";
 	private String mLuckyMoneyDetail = "com.tencent.mm.plugin.luckymoney.ui.LuckyMoneyDetailUI";
 	private String mLauncherUI = "com.tencent.mm.ui.LauncherUI";// 聊天界面（从桌面进去）
 	private String mListView = "android.widget.ListView";// 聊天界面（从联系人界面进去）
 	private String mLoadingView = "com.tencent.mm.ui.base.p";// 拆红包加载界面
-	// private String mQQListView =
-	// "com.tencent.mobileqq.activity.SplashActivity";// 拆红包加载界面
-	Handler handler = new Handler();
+	private Helper mHelper = new Helper();
 
 	@Override
 	public void onAccessibilityEvent(AccessibilityEvent event) {
 		final int eventType = event.getEventType();
-		Log.d(TAG, "消息内容：" + event.getText() + ",消息类型：" + eventType
-				+ ",event.getParcelableData():" + event.getParcelableData());
+		Log.d(TAG, "消息内容：" + event.getText() + ",消息类型：" + eventType + ",event.getParcelableData():"
+				+ event.getParcelableData());
 		// 通知变化事件，打开通知
 		if (eventType == AccessibilityEvent.TYPE_NOTIFICATION_STATE_CHANGED) {
 			List<CharSequence> texts = event.getText();
@@ -63,12 +58,6 @@ public class MonitorService extends AccessibilityService {
 		}
 	}
 
-	/*
-	 * @Override protected boolean onKeyEvent(KeyEvent event) {
-	 * 
-	 * //接收按键事件 //return super.onKeyEvent(event); return true; }
-	 */
-
 	@Override
 	public void onInterrupt() {
 		// 服务中断，如授权关闭或者将服务杀死
@@ -82,31 +71,18 @@ public class MonitorService extends AccessibilityService {
 		Toast.makeText(this, "连接抢红包服务", Toast.LENGTH_SHORT).show();
 	}
 
-	private void sendNotifyEvent() {
-		AccessibilityManager manager = (AccessibilityManager) getSystemService(ACCESSIBILITY_SERVICE);
-		if (!manager.isEnabled()) {
-			return;
-		}
-		AccessibilityEvent event = AccessibilityEvent
-				.obtain(AccessibilityEvent.TYPE_NOTIFICATION_STATE_CHANGED);
-		event.setPackageName(WECHAT_PACKAGENAME);
-		event.setClassName(Notification.class.getName());
-		CharSequence tickerText = WeiXin_TEXT_KEY;
-		event.getText().add(tickerText);
-		manager.sendAccessibilityEvent(event);
-	}
-
 	/**
 	 * 打开通知栏消息
 	 * 
 	 * @param event
 	 */
 	private void openNotify(AccessibilityEvent event) {
-		if (event.getParcelableData() != null
-				&& (event.getParcelableData() instanceof Notification)) {
+		if (Constant.ISDELAY) {
+			mHelper.setDelayRandom(Constant.DELAY);
+		}
+		if (event.getParcelableData() != null && (event.getParcelableData() instanceof Notification)) {
 			// 以下是精华，将微信的通知栏消息打开
-			Notification notification = (Notification) event
-					.getParcelableData();
+			Notification notification = (Notification) event.getParcelableData();
 			PendingIntent pendingIntent = notification.contentIntent;
 			try {
 				LuckyApplication.autoGetMoney = true;
@@ -127,6 +103,9 @@ public class MonitorService extends AccessibilityService {
 	 * @param event
 	 */
 	private void openHongBao(AccessibilityEvent event) {
+		if (Constant.ISDELAY) {
+			mHelper.setDelayRandom(Constant.DELAY);
+		}
 		String className = String.valueOf(event.getClassName());
 		Log.i(TAG, "event.getClassName():" + event.getClassName());
 		if (className.equals(mLuckyMoneyReceive)) {
@@ -163,8 +142,7 @@ public class MonitorService extends AccessibilityService {
 			return;
 		}
 
-		List<AccessibilityNodeInfo> list = nodeInfo
-				.findAccessibilityNodeInfosByText("拆红包");
+		List<AccessibilityNodeInfo> list = nodeInfo.findAccessibilityNodeInfosByText("拆红包");
 		for (AccessibilityNodeInfo n : list) {
 			Log.i(TAG, "-->拆红包:" + n);
 			LuckyApplication.autoGetMoney = false;
@@ -202,8 +180,7 @@ public class MonitorService extends AccessibilityService {
 			Log.w(TAG, "rootWindow为空");
 			return;
 		}
-		List<AccessibilityNodeInfo> list = nodeInfo
-				.findAccessibilityNodeInfosByText("领取红包");
+		List<AccessibilityNodeInfo> list = nodeInfo.findAccessibilityNodeInfosByText("领取红包");
 		if (!list.isEmpty()) {
 			// 最新的红包领起
 			for (int i = list.size() - 1; i >= 0; i--) {

@@ -12,18 +12,20 @@ import android.util.Log;
 import android.view.accessibility.AccessibilityEvent;
 import android.view.accessibility.AccessibilityNodeInfo;
 
+/**
+ * QQ服务监控
+ * 
+ * @author Administrator
+ *
+ */
 @SuppressLint("NewApi")
 public class QQMonitorService extends AccessibilityService {
 	private String TAG = "QQMonitorService";
-	private static final String WECHAT_OPEN_EN = "Open";
-	private static final String WECHAT_OPENED_EN = "You've opened";
-	private final static String QQ_DEFAULT_CLICK_OPEN = "点击拆开";
-	private final static String QQ_HONG_BAO_PASSWORD = "口令红包";
-	private final static String QQ_CLICK_TO_PASTE_PASSWORD = "点击输入口令";
-
 	private String mMoney = "0.00";
 	private String mName = "";
-	private boolean mIfReply = false;
+	private boolean mIfReply = false;// 是否
+	private boolean mIfOpenNotify = false;
+	private Helper mHelper = new Helper();
 
 	@SuppressLint("NewApi")
 	@Override
@@ -51,10 +53,13 @@ public class QQMonitorService extends AccessibilityService {
 			}
 		} else if (eventType == AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED
 				|| eventType == AccessibilityEvent.TYPE_VIEW_FOCUSED) {
-			// Log.d(TAG, "=====事件autoGetMoney:" +
-			// LuckyApplication.autoGetMoney);
-			openHongBao(event);
-
+			Log.i(TAG, "-----------mIfOpenNotify:" + mIfOpenNotify);
+			if (mIfOpenNotify) {
+				if (!Constant.ISREPLY) {
+					mIfOpenNotify = false;
+				}
+				openHongBao(event);
+			}
 		}
 	}
 
@@ -73,26 +78,33 @@ public class QQMonitorService extends AccessibilityService {
 				LuckyApplication.autoGetMoney = false;
 				checkKey2();// 打开QQ红包
 			}
-			if (mIfReply) {
-				AccessibilityNodeInfo nodeInfo = getRootInActiveWindow();
-				setReplyText(nodeInfo, mName + ",谢谢," + mMoney + "元");
-				setSendClick(getRootInActiveWindow());
-				mIfReply = false;
-				Intent intent = new Intent();
-				intent.setAction(Intent.ACTION_MAIN);
-				intent.addCategory(Intent.CATEGORY_HOME);  
-				intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-				startActivity(intent);
+			// 是否回复
+			if (Constant.ISREPLY) {
+				if (mIfReply) {
+					mIfOpenNotify = false;
+					String message = mHelper.getRandomReplyMessage(mName, mMoney);
+					AccessibilityNodeInfo nodeInfo = getRootInActiveWindow();
+					setReplyText(nodeInfo, message);
+					setSendClick(getRootInActiveWindow());
+					mIfReply = false;
+					if (Constant.ISGOHOME) {
+						setBackHome();// 返回主界面
+					}
+				}
 			}
+
 		} else if (className.equals("cooperation.qwallet.plugin.QWalletPluginProxyActivity")) {
-			// 打开红包界面
-			if (!mIfReply) {
-				AccessibilityNodeInfo nodeInfo = getRootInActiveWindow();
-				mMoney = getMoney(nodeInfo);
-				mName = getReplyPerson(nodeInfo);
-				setCloseDetailPage(nodeInfo);
-				mIfReply = true;
+			// 对打开红包界面进行处理
+			if (Constant.ISREPLY) {
+				if (!mIfReply) {
+					AccessibilityNodeInfo nodeInfo = getRootInActiveWindow();
+					mMoney = getMoney(nodeInfo);
+					mName = getReplyPerson(nodeInfo);
+					setCloseDetailPage(nodeInfo);
+					mIfReply = true;
+				}
 			}
+
 			Log.i(TAG, "QQ红包详情界面" + className);
 		} else if (className.equals("android.widget.AbsListView")) {
 			// 消息列表界面
@@ -108,13 +120,17 @@ public class QQMonitorService extends AccessibilityService {
 	 * @param event
 	 */
 	private void openNotify(AccessibilityEvent event) {
+		if (Constant.ISDELAY) {
+			mHelper.setDelayRandom(Constant.DELAY);
+		}
 		if (event.getParcelableData() != null && (event.getParcelableData() instanceof Notification)) {
-			// 以下是精华，将微信的通知栏消息打开
+			// 以下是精华，将QQ的通知栏消息打开
 			Notification notification = (Notification) event.getParcelableData();
 			PendingIntent pendingIntent = notification.contentIntent;
 			try {
 				LuckyApplication.autoGetMoney = true;
 				pendingIntent.send();// 打开通知栏
+				mIfOpenNotify = true;
 				Log.i(TAG, "打开通知栏!");
 			} catch (PendingIntent.CanceledException e) {
 				Log.e(TAG, "打开通知栏异常！");
@@ -146,22 +162,7 @@ public class QQMonitorService extends AccessibilityService {
 					parent.performAction(AccessibilityNodeInfo.ACTION_CLICK);
 					// 如果是口令红包，需要特殊处理
 					if (pwdMoney != null && !pwdMoney.isEmpty()) {
-						List<AccessibilityNodeInfo> clickMeList = nodeInfo.findAccessibilityNodeInfosByText("点击输入口令");//
-						if (!clickMeList.isEmpty()) {
-							for (int j = clickMeList.size() - 1; j >= 0; j--) {
-								AccessibilityNodeInfo clickMe = clickMeList.get(j).getParent();
-								clickMe.performAction(AccessibilityNodeInfo.ACTION_CLICK);
-								Log.e(TAG, "“点击输入口令”已点击！");
-							}
-						}
-						List<AccessibilityNodeInfo> sendList = nodeInfo.findAccessibilityNodeInfosByText("发送");//
-						if (!sendList.isEmpty()) {
-							for (int j = sendList.size() - 1; j >= 0; j--) {
-								AccessibilityNodeInfo send = sendList.get(j);
-								send.performAction(AccessibilityNodeInfo.ACTION_CLICK);
-								Log.e(TAG, "“发送”已点击！");
-							}
-						}
+						sendPassword(nodeInfo);// 点击口令并发送
 						Log.e(TAG, "口令红包");
 					} else if (normalMoney != null && !normalMoney.isEmpty()) {
 						Log.e(TAG, "普通类型QQ红包");
@@ -178,37 +179,37 @@ public class QQMonitorService extends AccessibilityService {
 		}
 	}
 
+	/**
+	 * 点击口令并发送（针对口令红包）
+	 * 
+	 * @param nodeInfo
+	 */
+	private void sendPassword(AccessibilityNodeInfo nodeInfo) {
+		if (Constant.ISDELAY) {
+			mHelper.setDelayRandom(Constant.DELAY);
+		}
+		List<AccessibilityNodeInfo> clickMeList = nodeInfo.findAccessibilityNodeInfosByText("点击输入口令");//
+		if (!clickMeList.isEmpty()) {
+			for (int j = clickMeList.size() - 1; j >= 0; j--) {
+				AccessibilityNodeInfo clickMe = clickMeList.get(j).getParent();
+				clickMe.performAction(AccessibilityNodeInfo.ACTION_CLICK);
+				Log.e(TAG, "“点击输入口令”已点击！");
+			}
+		}
+		List<AccessibilityNodeInfo> sendList = nodeInfo.findAccessibilityNodeInfosByText("发送");//
+		if (!sendList.isEmpty()) {
+			for (int j = sendList.size() - 1; j >= 0; j--) {
+				AccessibilityNodeInfo send = sendList.get(j);
+				send.performAction(AccessibilityNodeInfo.ACTION_CLICK);
+				Log.e(TAG, "“发送”已点击！");
+			}
+		}
+	}
+
 	@Override
 	public void onInterrupt() {
 		// TODO Auto-generated method stub
 
-	}
-
-	/**
-	 * 无用的方法
-	 * 
-	 * @param event
-	 * @return
-	 */
-	private List<AccessibilityNodeInfo> getText(AccessibilityEvent event) {
-		// TODO Auto-generated method stub
-		AccessibilityNodeInfo nodeInfo = event.getSource();
-		String[] arrays = new String[] { QQ_DEFAULT_CLICK_OPEN, QQ_HONG_BAO_PASSWORD, QQ_CLICK_TO_PASTE_PASSWORD,
-				"发送" };
-		for (String str : arrays) {
-			if (str == null) {
-				continue;
-			}
-			List<AccessibilityNodeInfo> nodes = nodeInfo.findAccessibilityNodeInfosByText(str);
-			if (!nodes.isEmpty()) {
-				if (str.equals(WECHAT_OPEN_EN)
-						&& !nodeInfo.findAccessibilityNodeInfosByText(WECHAT_OPENED_EN).isEmpty()) {
-					continue;
-				}
-				return nodes;
-			}
-		}
-		return null;
 	}
 
 	// --------------------------------------------------------------------
@@ -231,7 +232,6 @@ public class QQMonitorService extends AccessibilityService {
 				Log.i(TAG, "---------------发送人：" + sendName);
 			}
 		}
-		Log.i(TAG, "---------------发送人：" + sendName);
 		return sendName;
 	}
 
@@ -251,8 +251,9 @@ public class QQMonitorService extends AccessibilityService {
 				money = (String) list.get(i).getText();
 				Log.i(TAG, "---------------你抢到了：" + money);
 			}
+		} else {
+			Log.i(TAG, "---------------来晚了，红包已被抢完！");
 		}
-		Log.i(TAG, "---------------你抢到了：" + money);
 		return money;
 	}
 
@@ -263,6 +264,12 @@ public class QQMonitorService extends AccessibilityService {
 	 * @return
 	 */
 	private boolean setCloseDetailPage(AccessibilityNodeInfo nodeInfo) {
+		if (!Constant.ISREPLY) {
+			return false;
+		}
+		if (Constant.ISDELAY) {
+			mHelper.setDelayRandom(Constant.DELAY);
+		}
 		List<AccessibilityNodeInfo> closeBtnList = nodeInfo
 				.findAccessibilityNodeInfosByViewId("com.tencent.mobileqq:id/close_btn");// 找到“关闭”关键字
 		if (!closeBtnList.isEmpty()) {
@@ -279,6 +286,12 @@ public class QQMonitorService extends AccessibilityService {
 	 * @return
 	 */
 	private boolean setReplyText(AccessibilityNodeInfo nodeInfo, String message) {
+		if (!Constant.ISREPLY) {
+			return false;
+		}
+		if (Constant.ISDELAY) {
+			mHelper.setDelayRandom(Constant.DELAY);
+		}
 		List<AccessibilityNodeInfo> inputList = nodeInfo
 				.findAccessibilityNodeInfosByViewId("com.tencent.mobileqq:id/input");// 找到“关闭”关键字
 		if (!inputList.isEmpty()) {
@@ -297,19 +310,34 @@ public class QQMonitorService extends AccessibilityService {
 	 * @return
 	 */
 	private boolean setSendClick(AccessibilityNodeInfo nodeInfo) {
+		if (!Constant.ISREPLY) {
+			return false;
+		}
+		if (Constant.ISDELAY) {
+			mHelper.setDelayRandom(Constant.DELAY);
+		}
 		List<AccessibilityNodeInfo> sendList = nodeInfo.findAccessibilityNodeInfosByText("发送");//
 		if (!sendList.isEmpty()) {
 			for (int j = sendList.size() - 1; j >= 0; j--) {
 				AccessibilityNodeInfo send = sendList.get(j);
 				send.performAction(AccessibilityNodeInfo.ACTION_CLICK);
-				Log.e(TAG, "“发送”已点击！");
+				Log.i(TAG, "“发送”已点击！");
 			}
 		}
 		return true;
 	}
-	
-	private boolean setBackHome(){
-		
+
+	/**
+	 * 模拟点击Home按键
+	 * 
+	 * @return
+	 */
+	private boolean setBackHome() {
+		Intent intent = new Intent();
+		intent.setAction(Intent.ACTION_MAIN);
+		intent.addCategory(Intent.CATEGORY_HOME);
+		intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+		startActivity(intent);
 		return false;
 	}
 }

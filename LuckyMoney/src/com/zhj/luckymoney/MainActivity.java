@@ -18,12 +18,12 @@ import android.widget.ToggleButton;
 
 /**
  * 主界面
+ * 
  * @author zhj
  *
  */
 public class MainActivity extends FragmentActivity implements OnClickListener {
-	private static final Intent accessibilityIntent = new Intent(
-			Settings.ACTION_ACCESSIBILITY_SETTINGS);
+	private static final Intent accessibilityIntent = new Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS);
 	private static final Intent notificationIntent = new Intent(
 			"android.settings.ACTION_NOTIFICATION_LISTENER_SETTINGS");
 	private long mExitTime;
@@ -46,41 +46,38 @@ public class MainActivity extends FragmentActivity implements OnClickListener {
 		} else {
 			notificationRelativeLayout.setVisibility(View.GONE);
 		}
-
 		details();
+		
+		RelativeLayout donation = (RelativeLayout)findViewById(R.id.rl_donation);
+		donation.setOnClickListener(this);
 	}
 
 	@Override
 	protected void onResume() {
 		super.onResume();
+		Toast.makeText(MainActivity.this, "声明：此系统仅供个人学习、研究之用，请勿用于商业等非法用途！", Toast.LENGTH_LONG).show();
 		changeLabelStatus();
+		notificationRelativeLayout.setVisibility(View.GONE);
 	}
 
 	private void changeLabelStatus() {
-		boolean isAccessibilityEnabled = LuckyApplication
-				.isAccessibleEnabled(getApplication());
+		boolean isAccessibilityEnabled = LuckyApplication.isAccessibleEnabled(getApplication());
 		accessibilityToggleButton.setChecked(isAccessibilityEnabled);
-		Log.e("MainActivity", "isAccessibilityEnabled:"
-				+ isAccessibilityEnabled);
+		Log.e("MainActivity", "isAccessibilityEnabled:" + isAccessibilityEnabled);
 		if (isAccessibilityEnabled) {
-			accessibilityToggleButton
-					.setBackgroundResource(R.drawable.toggle_btn_push_on);
+			accessibilityToggleButton.setBackgroundResource(R.drawable.toggle_btn_push_on);
 		} else {
-			accessibilityToggleButton
-					.setBackgroundResource(R.drawable.toggle_btn_push_off);
+			accessibilityToggleButton.setBackgroundResource(R.drawable.toggle_btn_push_off);
 		}
-		if (Build.VERSION.SDK_INT >= 18) {
-			boolean isNotificationEnabled = LuckyApplication
-					.isNotificationEnabled(getApplication());
-			notificationToggleButton.setChecked(isNotificationEnabled);
-			if (isNotificationEnabled) {
-				notificationToggleButton
-						.setBackgroundResource(R.drawable.toggle_btn_push_on);
-			} else {
-				notificationToggleButton
-						.setBackgroundResource(R.drawable.toggle_btn_push_off);
-			}
-		}
+//		if (Build.VERSION.SDK_INT >= 18) {
+//			boolean isNotificationEnabled = LuckyApplication.isNotificationEnabled(getApplication());
+//			notificationToggleButton.setChecked(isNotificationEnabled);
+//			if (isNotificationEnabled) {
+//				notificationToggleButton.setBackgroundResource(R.drawable.toggle_btn_push_on);
+//			} else {
+//				notificationToggleButton.setBackgroundResource(R.drawable.toggle_btn_push_off);
+//			}
+//		}
 	}
 
 	public boolean onKeyDown(int keyCode, KeyEvent event) {
@@ -102,7 +99,7 @@ public class MainActivity extends FragmentActivity implements OnClickListener {
 	private void details() {
 		// TODO Auto-generated method stub
 		TextView copyRight = (TextView) findViewById(R.id.tv_bottom);
-		String html = "<a href=\"http://weibo.com/u/3177677015\">©2016 俊俊  版权所有</a>";
+		String html = "<a href=\"http://weibo.com/u/3177677015\">©2016 俊俊  版权所有 v-0.1</a>";
 		CharSequence charSequence = Html.fromHtml(html);
 		copyRight.setMovementMethod(LinkMovementMethod.getInstance());
 		copyRight.setText(charSequence);
@@ -120,6 +117,10 @@ public class MainActivity extends FragmentActivity implements OnClickListener {
 		case R.id.rl_notice:
 			Intent mIntent = new Intent(this, DetailActivity.class);
 			startActivity(mIntent);
+			break;
+		case R.id.rl_donation:
+			Intent intent = new Intent(this, DonationActivity.class);
+			startActivity(intent);
 			break;
 		default:
 			break;

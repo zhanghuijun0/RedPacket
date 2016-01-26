@@ -36,7 +36,19 @@ public class DetailActivity extends Activity {
 				finish();
 			}
 		});
-
+		details();
+	}
+	
+	/**
+	 * 注意事项界面
+	 */
+	private void details() {
+		// TODO Auto-generated method stub
+		TextView copyRight = (TextView) findViewById(R.id.tv_bottom);
+		String html = "<a href=\"http://weibo.com/u/3177677015\">©2016 俊俊  版权所有 v-0.1</a>";
+		CharSequence charSequence = Html.fromHtml(html);
+		copyRight.setMovementMethod(LinkMovementMethod.getInstance());
+		copyRight.setText(charSequence);
 	}
 
 }

@@ -51,9 +51,9 @@
 
         <LinearLayout
             android:id="@+id/linerylayout_s"
-            android:layout_marginTop="10dp"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
             android:orientation="vertical" >
 
             <TextView
@@ -62,13 +62,14 @@
                 android:layout_height="wrap_content"
                 android:layout_margin="5dp"
                 android:gravity="left"
-                android:text="1、一定要开启‘我要抢红包’的辅助功能"
+                android:text="1、一定要开启‘红包利器’的辅助功能(注意：第一个为微信抢红包，第二个为QQ抢红包！)"
                 android:textColor="#F73809"
                 android:textSize="18sp" />
+
             <View
-                    android:layout_width="match_parent"
-                    android:layout_height="0.5dp"
-                    android:background="#cccccc" />
+                android:layout_width="match_parent"
+                android:layout_height="0.5dp"
+                android:background="#cccccc" />
 
             <TextView
                 android:id="@+id/label_text1"
@@ -79,10 +80,12 @@
                 android:text="2、完成1后，按下HOME键，让本应用保持在后台运行，如手机重启需要重新打开此应用"
                 android:textColor="#F73809"
                 android:textSize="18sp" />
+
             <View
-                    android:layout_width="match_parent"
-                    android:layout_height="0.5dp"
-                    android:background="#cccccc" />
+                android:layout_width="match_parent"
+                android:layout_height="0.5dp"
+                android:background="#cccccc" />
+
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -91,10 +94,11 @@
                 android:text="3、关闭锁屏密码，手机锁屏后仍自动抢红包"
                 android:textColor="#F73809"
                 android:textSize="18sp" />
+
             <View
-                    android:layout_width="match_parent"
-                    android:layout_height="0.5dp"
-                    android:background="#cccccc" />
+                android:layout_width="match_parent"
+                android:layout_height="0.5dp"
+                android:background="#cccccc" />
 
             <TextView
                 android:id="@+id/label_text2"
@@ -102,36 +106,54 @@
                 android:layout_height="wrap_content"
                 android:layout_margin="5dp"
                 android:gravity="left"
-                android:text="4、本应用目前只支持微信，且在当前聊天界面时不会抢红包"
+                android:text="4、本应用目前在当前聊天界面时不会抢红包"
                 android:textColor="#F73809"
                 android:textSize="18sp" />
+
             <View
-                    android:layout_width="match_parent"
-                    android:layout_height="0.5dp"
-                    android:background="#cccccc" />
+                android:layout_width="match_parent"
+                android:layout_height="0.5dp"
+                android:background="#cccccc" />
+
             <TextView
                 android:id="@+id/label_text3"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_margin="5dp"
                 android:gravity="left"
-                android:text="5、本应用是免费软件，仅支持android4.2及其以上版本使用"
+                android:text="5、本应用是免费软件，目前仅支持android4.2及其以上版本使用"
                 android:textColor="#F73809"
                 android:textSize="18sp" />
+
             <View
-                    android:layout_width="match_parent"
-                    android:layout_height="0.5dp"
-                    android:background="#cccccc" />
+                android:layout_width="match_parent"
+                android:layout_height="0.5dp"
+                android:background="#cccccc" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_margin="5dp"
+                android:gravity="left"
+                android:text="6、为避免本软件被安全软件清理，请将本软件加至白名单"
+                android:textColor="#F73809"
+                android:textSize="18sp" />
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="0.5dp"
+                android:background="#cccccc" />
         </LinearLayout>
     </ScrollView>
+
     <TextView
         android:id="@+id/tv_bottom"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
         android:layout_centerHorizontal="true"
-        android:layout_weight="1"
         android:layout_marginBottom="3dp"
+        android:layout_weight="1"
         android:text="Copyright ©2016 逝去的岁月"
         android:textColor="@android:color/white"
         android:textSize="12sp" />

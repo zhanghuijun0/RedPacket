@@ -166,6 +166,30 @@
                 android:contentDescription="@null"
                 android:src="@drawable/ic_next" />
         </RelativeLayout>
+        <RelativeLayout
+            android:id="@+id/rl_donation"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:padding="10dp" >
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:gravity="center|left"
+                android:text="打赏一下"
+                android:textColor="@android:color/white"
+                android:textSize="18sp" />
+
+            <ImageView
+                android:layout_width="47dp"
+                android:layout_height="20dp"
+                android:layout_alignParentRight="true"
+                android:layout_centerHorizontal="true"
+                android:layout_centerVertical="true"
+                android:contentDescription="@null"
+                android:src="@drawable/ic_next" />
+        </RelativeLayout>
     </LinearLayout>
     <TextView
         android:id="@+id/tv_bottom"
